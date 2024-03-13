@@ -59,7 +59,7 @@ To view a sample observation of the data and get a quick summary of the data, ru
     product_data.describe()
 
 
-## Market Shares Computation
+## Part 4 Market Shares Computation
 We want to transform observed quantities $q_{jt}$ into market shares $s_{jt} = q_{jt} / M_t$.
 We first need to define a market size $M_t$. We'll assume that the potential number of servings sold in a market is the city's total population multiplied by 90 days in the quarter. Create [a new column] called `market_size` equal to `city_population` times `90`. Note that this assumption is somewhat reasonable but also somewhat arbitrary. Perhaps a sizable portion of the population in a city would never even consider purchasing cereal. Or perhaps those who do tend to want more than one serving per day.  ::
 
@@ -80,5 +80,46 @@ Compute summary statistics for your inside and outside shares. If you computed m
     product_data.head()
 
     product_data.describe()
+
     
+## Part 5 Estimate the pure logit model with OLS
+
+
+
+::
+
+        
+        product_data["logit_delta"] = np.log(product_data["market_share"] /product_data["outside_share"])
+        product_data.head()
+
+        from statsmodels.formula.api import ols
+
+        product_data_renamed = product_data.rename(columns={"market": "market_ids", "product": "product_ids", "market_share":"shares", "price_per_serving":"prices"})
+        product_data_renamed.head()
+
+        product_data_renamed["demand_instruments0"] = product_data_renamed["prices"]
+        product_data_renamed.head()
+
+        ols_problem = pyblp.Problem(pyblp.Formulation('1 + mushy + prices'), product_data_renamed)
+        print(ols_problem)
+
+        ols_results = ols_problem.solve(method='1s') # 1 step gmm
+        print(ols_results)
+
+        ols_problem_absfixedeff = pyblp.Problem(pyblp.Formulation('prices', absorb='C(market_ids) + C(product_ids)'), product_data_renamed)  ## add fixed effects 
+        ols_results_absfixedeff = ols_problem_absfixedeff.solve(method='1s')
+        print(ols_results_absfixedeff)
+
+
+
+
+        mdlolsfirststage = ols("prices ~ price_instrument + C(market_ids) + C(product_ids)", data=product_data_renamed) ## model object
+        mdlolsfirststage = mdlolsfirststage.fit(cov_type="HC0") ## model fitting
+        print(mdlolsfirststage.params)  ## model parameters
+
+        print(mdlolsfirststage.summary())
+
+        product_data_renamed["demand_instruments0"] = product_data_renamed["price_instrument"]
+        product_data_renamed.head()
+
 
