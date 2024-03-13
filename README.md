@@ -3,7 +3,16 @@ ECO/BSA 472 Final Project Writing Assignment
 
 
 ## Part 1 Download Anaconda and Python
-`Click here for instructions on how to download Anaconda and Python:<https://saas.berkeley.edu/education/installing-python-and-anaconda#:~:text=Visit%20the%20Anaconda%20website%20and%20click%20the%20Windows%20icon.,for%20me%20only%20before%20continuing.>`
+
+You should install PyBLP on top of the [Anaconda Distribution](https://www.anaconda.com/). Anaconda comes pre-packaged with all of PyBLP's dependencies and many more Python packages that are useful for statistical computing. Steps:
+
+1. [Install Anaconda](https://docs.anaconda.com/free/anaconda/install/) if you haven't already. You may wish to [create a new environment](https://docs.anaconda.com/free/anacondaorg/user-guide/work-with-environments/) for just these exercises, but this isn't strictly necessary.
+2. [Install PyBLP](https://github.com/jeffgortmaker/pyblp#installation). On the Anaconda command line, you can run the command `pip install pyblp`.
+
+If you're using Python, you have two broad options for how to do the coding exercises.
+
+- Use a [Jupyter Notebook](https://jupyter.org/install#jupyter-notebook). The solutions to each exercise will be in a notebook. In general, notebooks are a good way to weave text and code for short exercises, and to distribute quick snippets of code with others.
+
 
 
 ## Part 2 Open Anaconda, Open JupyterLabs, Open Python3 Notebook, Install BLP, 
@@ -15,6 +24,7 @@ You can install the current release of PyBLP with `pip <https://pip.pypa.io/en/l
     import pyblp
     import numpy as np
     import pandas as pd
+    import statsmodels.formula.api as smf
 
     pyblp.options.digits = 2
     pyblp.options.verbose = False
