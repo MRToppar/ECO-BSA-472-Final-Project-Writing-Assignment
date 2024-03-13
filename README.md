@@ -22,15 +22,22 @@ You can install the current release of PyBLP with `pip <https://pip.pypa.io/en/l
 
 ## Part 3 Upload Data, Define Data and View 5 observations::
 
-Click this link to download the file to your computer.
+Click the file products.csv under README.md and download the file to your computer.
 
 To upload data into the Anaconda environment, click the upload icon (second to the right-side of the blue plus tab).
 
-To define the data and view the firs five observations run the following code:
+To define the data and view the first five observations run the following code:
 
     product_data = pd.read_csv('products.csv')
     product_data.head()
 
     product_data.sample()
     product_data.describe()
+    
+To view a sample observation of the data and get a quick summary of the data, run the following code:
+
+    product_data.sample()
+    product_data.describe()
+
+
     
