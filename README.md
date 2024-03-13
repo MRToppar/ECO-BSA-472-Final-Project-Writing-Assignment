@@ -20,4 +20,8 @@ You can install the current release of PyBLP with `pip <https://pip.pypa.io/en/l
     pyblp.options.verbose = False
     pyblp.__version__
 
-## Part 3 Download Data and View 5 observations
+## Part 3 Upload Data, Define Data and View 5 observations::
+
+    product_data = pd.read_csv('products.csv')
+    product_data.head()
+    
