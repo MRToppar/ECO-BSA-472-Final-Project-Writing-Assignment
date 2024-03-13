@@ -82,20 +82,39 @@ Compute summary statistics for your inside and outside shares. If you computed m
     product_data.describe()
 
     
-## Part 5 Estimate the pure logit model with OLS
+## Part 5 Estimate the pure logit model with OLS::
+Recall the pure logit estimating equation: $\log(s_{jt} / s_{0t}) = \delta_{jt} = \alpha p_{jt} + x_{jt}' \beta + \xi_{jt}$. 
+First, create a new column `logit_delta` equal to the left-hand side of this expression. I used [`np.log`] to compute the log.
 
-
-
-::
-
-        
         product_data["logit_delta"] = np.log(product_data["market_share"] /product_data["outside_share"])
         product_data.head()
 
+
+Then, run an OLS regression of `logit_delta` on a constant, `mushy`, and `price_per_serving`. T To use robust standard errors, you can specify `cov_type='HC0'` in [`OLS.fit`](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.fit.html).
+
         from statsmodels.formula.api import ols
+
+        mdlols = ols("logit_delta ~ 1 + mushy + price_per_serving", data=product_data) ## model object
+        mdlols = mdlols.fit(cov_type="HC0") ## model fitting
+        print(mdlols.params)  ## model parameters
+        
+        
+
+Interpret your estimates. Your coefficient on `price_per_serving` should be around `-7.48`. In particular, can you re-express your estimate on `mushy` in terms of how much consumers are willing to pay for `mushy`, using your estimated price coefficient?
+
+
+## Part 6 Estimate the pure logit model with PyBLP::      
+For the rest of the exercises, we'll use PyBLP do to our demand estimation. This isn't necessary for estimating the pure logit model, which can be done with linear regressions, but using PyBLP allows us to easily run our price cut counterfactual.
+
+PyBLP requires that some key columns have specific names so that they can be understood by PyBLP.
 
         product_data_renamed = product_data.rename(columns={"market": "market_ids", "product": "product_ids", "market_share":"shares", "price_per_serving":"prices"})
         product_data_renamed.head()
+
+
+By default, PyBLP treats `prices` as endogenous, so it won't include them in its matrix of instruments. But the "instruments" for running an OLS regression are the same as the full set of regressors. So when running an OLS regression and not account for price endogeneity, we'll "instrument" for `prices` with `prices` themselves. We can do this by creating a new column `demand_instruments0` equal to `prices`. PyBLP will recognize all columns that start with `demand_instruments` and end with `0`, `1`, `2`, etc., as "excluded" instruments to be stacked with the exogenous characteristics to create the full set of instruments.
+
+With the correct columns in hand, we can initialize our [`pyblp.Problem`]. 
 
         product_data_renamed["demand_instruments0"] = product_data_renamed["prices"]
         product_data_renamed.head()
@@ -103,8 +122,15 @@ Compute summary statistics for your inside and outside shares. If you computed m
         ols_problem = pyblp.Problem(pyblp.Formulation('1 + mushy + prices'), product_data_renamed)
         print(ols_problem)
 
+If you `print(ols_problem)`, you'll get information about the configured problem. There should be 94 markets (`T`), 2256 observations (`N`), 3 product characteristics (`K1`), and 3 total instruments (`MD`).
+
+To estimate the configured problem, use [`.solve`]. Use `method='1s'` to just do 1-step GMM instead of the default 2-step GMM. In this case, this will just run a simple linear OLS regression. The full code should look like the following.
+        
         ols_results = ols_problem.solve(method='1s') # 1 step gmm
         print(ols_results)
+
+      
+
 
         ols_problem_absfixedeff = pyblp.Problem(pyblp.Formulation('prices', absorb='C(market_ids) + C(product_ids)'), product_data_renamed)  ## add fixed effects 
         ols_results_absfixedeff = ols_problem_absfixedeff.solve(method='1s')
