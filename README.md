@@ -1,6 +1,11 @@
 # ECO-BSA-472-Final-Project-Writing-Assignment
 ECO/BSA 472 Final Project Writing Assignment
 
+Today, you will use the products.csv dataset, which is a simplified version of Nevo's (2000) fake cereal data with less information and fewer derived columns. The data were motivated by real grocery store scanner data, but due to the proprietary nature of this type of data, the provided data are not entirely real. This dataset has been used as a standard example in much of the literature on BLP estimation.
+
+The data contains information about 24 breakfast cereals across 94 markets. Each row is a product-market pair. Each market has the same set of breakfast cereals, although with different prices and quantities. The columns in the data are as follows.
+
+Compared to typical datasets, the number of observations in this example dataset is quite small. This helps with making these exercises run very fast, but in practice one would want more data than just a couple thousand data points to estimate a flexible model of demand. Typical datasets will also include many more product characteristics. This one only includes a couple to keep the length of the exercises manageable.
 
 ## Part 1 Download Anaconda and Python
 
