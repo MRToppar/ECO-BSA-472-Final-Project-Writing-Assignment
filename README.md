@@ -20,7 +20,7 @@ If you're using Python, you have two broad options for how to do the coding exer
 
 
 
-## Part 2 Open Anaconda, Open JupyterLabs, Open Python3 Notebook, Install BLP, 
+## Part 2 Open Anaconda, Open JupyterLabs, Open Python3 Notebook, and Install BLP 
 
 Open Anaconda, select the Home button on the left menu, launch JupyterLab. DO NOT connect to a cloud!
 
