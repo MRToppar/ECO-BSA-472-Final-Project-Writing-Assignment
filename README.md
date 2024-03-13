@@ -30,4 +30,7 @@ To define the data and view the firs five observations run the following code:
 
     product_data = pd.read_csv('products.csv')
     product_data.head()
+
+    product_data.sample()
+    product_data.describe()
     
