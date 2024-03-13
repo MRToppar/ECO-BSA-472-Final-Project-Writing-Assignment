@@ -22,7 +22,7 @@ If you're using Python, you have two broad options for how to do the coding exer
 
 ## Part 2 Open Anaconda, Open JupyterLabs, Open Python3 Notebook, Install BLP, 
 
-Open Anaconda, select the Home button on the left menu, launch JupyterLab. DO not connect to a cloud!
+Open Anaconda, select the Home button on the left menu, launch JupyterLab. DO NOT connect to a cloud!
 
 Click the blue tab plus sign located beneath file. Next, click on Python 3 under Notebook. You are ready to type codes into the command line.
 
@@ -45,7 +45,7 @@ Click the file products.csv under README.md and download the file to your comput
 
 To upload data into the Anaconda environment, click the upload icon (second to the right-side of the blue plus tab).
 
-To define the data and view the first five observations run the following code:
+To define the data and view the first five observations run the following code::
 
     product_data = pd.read_csv('products.csv')
     product_data.head()
@@ -53,10 +53,32 @@ To define the data and view the first five observations run the following code:
     product_data.sample()
     product_data.describe()
     
-To view a sample observation of the data and get a quick summary of the data, run the following code:
+To view a sample observation of the data and get a quick summary of the data, run the following code::
 
     product_data.sample()
     product_data.describe()
 
 
+## Market Shares Computation
+We want to transform observed quantities $q_{jt}$ into market shares $s_{jt} = q_{jt} / M_t$.
+We first need to define a market size $M_t$. We'll assume that the potential number of servings sold in a market is the city's total population multiplied by 90 days in the quarter. Create [a new column] called `market_size` equal to `city_population` times `90`. Note that this assumption is somewhat reasonable but also somewhat arbitrary. Perhaps a sizable portion of the population in a city would never even consider purchasing cereal. Or perhaps those who do tend to want more than one serving per day.  ::
+
+    product_data["market_size"] = product_data["city_population"] * 90
+
+    product_data.head()
     
+Next, compute a new column `market_share` equal to `servings_sold` divided by `market_size`. This gives our market shares $s_{jt}$. We'll also need the outside share $s_{0t} = 1 - \sum_{j \in J_t} s_{jt}$. Create a new column `outside_share` equal to this expression.  ::
+
+    product_data["market_share"] = product_data["servings_sold"] / product_data["market_size"]
+    product_data.head()
+    
+Compute summary statistics for your inside and outside shares. If you computed market shares correctly, the smallest outside share should be $s_{0t} \approx 0.305$ and the largest should be $s_{0t} \approx 0.815$.::
+
+    grouped_market_shares = product_data.groupby("market")["market_share"]
+    within_market_sum_inside_shares = grouped_market_shares.transform("sum")
+    product_data["outside_share"] = 1 - within_market_sum_inside_shares
+    product_data.head()
+
+    product_data.describe()
+    
+
