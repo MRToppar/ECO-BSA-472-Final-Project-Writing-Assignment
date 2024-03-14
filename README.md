@@ -199,7 +199,7 @@ Compute the percent change in shares for each product in the market. From firm o
         counterfactual_data.head()
 
 
-## Part 10 Compute demand elasticities
+## Part 10 Compute Demand Elasticities
 
 To better understand what's going on, use [`.compute_elasticities`) again specifying `market_id='C01Q2'`, to compute price elasticities for our market of interest. These measure what the model predicts will happen to demand in percentage terms when there's a 1% change in price of a product. The diagonal elements are own-price elasticities and the off-diagonal elements are cross-price elasticities. Does demand seem very elastic? Do the cross-price elasticities seem particularly reasonable?
 
