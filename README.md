@@ -28,13 +28,19 @@ Click the blue tab plus sign located beneath file. Next, click on Python 3 under
 
 You can install the current release of PyBLP with ::
 
+  Run this line first:
+  
     pip install pyblp
-    
+
+ Run this line next:
+ 
     import pyblp
     import numpy as np
     import pandas as pd
     import statsmodels.formula.api as smf
 
+ Run this line last:
+ 
     pyblp.options.digits = 2
     pyblp.options.verbose = False
     pyblp.__version__
