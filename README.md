@@ -104,6 +104,8 @@ Then, run an OLS regression of `logit_delta` on a constant, `mushy`, and `price_
     mdlols = ols("logit_delta ~ 1 + mushy + price_per_serving", data=product_data) ## model object
     mdlols = mdlols.fit(cov_type="HC0") ## model fitting
     print(mdlols.params)  ## model parameters
+    print(mdlols.summary())  ## model summary
+
         
         
 
