@@ -117,26 +117,30 @@ For the rest of the exercises, we'll use PyBLP do to our demand estimation. This
 
 PyBLP requires that some key columns have specific names so that they can be understood by PyBLP.
 
-        product_data_renamed = product_data.rename(columns={"market": "market_ids", "product": "product_ids", "market_share":"shares", "price_per_serving":"prices"})
-        product_data_renamed.head()
+    product_data_renamed = product_data.rename(columns={"market": "market_ids", "product": "product_ids", "market_share":"shares", "price_per_serving":"prices"})
+    product_data_renamed.head()
 
 
 By default, PyBLP treats `prices` as endogenous, so it won't include them in its matrix of instruments. But the "instruments" for running an OLS regression are the same as the full set of regressors. So when running an OLS regression and not account for price endogeneity, we'll "instrument" for `prices` with `prices` themselves. We can do this by creating a new column `demand_instruments0` equal to `prices`. PyBLP will recognize all columns that start with `demand_instruments` and end with `0`, `1`, `2`, etc., as "excluded" instruments to be stacked with the exogenous characteristics to create the full set of instruments.
 
 With the correct columns in hand, we can initialize our [`pyblp.Problem`]. 
 
-        product_data_renamed["demand_instruments0"] = product_data_renamed["prices"]
-        product_data_renamed.head()
+  Run these first:
+  
+    product_data_renamed["demand_instruments0"] = product_data_renamed["prices"]
+    product_data_renamed.head()
 
-        ols_problem = pyblp.Problem(pyblp.Formulation('1 + mushy + prices'), product_data_renamed)
-        print(ols_problem)
+ Run these next:
+ 
+    ols_problem = pyblp.Problem(pyblp.Formulation('1 + mushy + prices'), product_data_renamed)
+    print(ols_problem)
 
 If you `print(ols_problem)`, you'll get information about the configured problem. There should be 94 markets (`T`), 2256 observations (`N`), 3 product characteristics (`K1`), and 3 total instruments (`MD`).
 
 To estimate the configured problem, use [`.solve`]. Use `method='1s'` to just do 1-step GMM instead of the default 2-step GMM. In this case, this will just run a simple linear OLS regression. The full code should look like the following.
         
-        ols_results = ols_problem.solve(method='1s') # 1 step gmm
-        print(ols_results)
+    ols_results = ols_problem.solve(method='1s') # 1 step gmm
+    print(ols_results)
 
 Again, if you `print(ols_results)`, you'll get estimates from the logit model. Make sure that your estimates are the same as those you got from your OLS regression. If you used `'HC0'` standard errors like suggested above, you standard errors should also be the same.
 
@@ -152,9 +156,9 @@ The alternative, which we'll do today, is to "absorb" the fixed effects. For a s
 
 Since `mushy` is always either 1 or 0 for the same product across different markets, it's collinear with product fixed effects, and you can drop `mushy` from your formula. Similarly, you can drop the constant. After dropping these, re-create your problem with absorbed fixed effects and re-solve it. Compare the new $\hat{\alpha}$ estimate with the last one. You should now be getting a coefficient on price of around `-28.6`. Does its change suggest that price was positively or negatively correlated with unobserved product-level/market-level quality?
 
-        ols_problem_absfixedeff = pyblp.Problem(pyblp.Formulation('prices', absorb='C(market_ids) + C(product_ids)'), product_data_renamed)  ## add fixed effects 
-        ols_results_absfixedeff = ols_problem_absfixedeff.solve(method='1s')
-        print(ols_results_absfixedeff)
+    ols_problem_absfixedeff = pyblp.Problem(pyblp.Formulation('prices', absorb='C(market_ids) + C(product_ids)'), product_data_renamed)  ## add fixed effects 
+    ols_results_absfixedeff = ols_problem_absfixedeff.solve(method='1s')
+    print(ols_results_absfixedeff)
 
 
 ## Part 8 Add an instrument for price
@@ -163,60 +167,60 @@ Adding market and product fixed effects can be helpful, but since unobserved qua
 Before using it, we should first run a first-stage regression to make sure that it's a relevant instrument for price. To do so, use the same package you used above to run an OLS regression to run a second OLS regression of prices on `price_instrument` and your market and product fixed effects. Does `price_instrument` seem like a relevant instrument for `prices`?
 
 
-        mdlolsfirststage = ols("prices ~ price_instrument + C(market_ids) + C(product_ids)", data=product_data_renamed) ## model object
-        mdlolsfirststage = mdlolsfirststage.fit(cov_type="HC0") ## model fitting
-        print(mdlolsfirststage.params)  ## model parameters
+    mdlolsfirststage = ols("prices ~ price_instrument + C(market_ids) + C(product_ids)", data=product_data_renamed) ## model object
+    mdlolsfirststage = mdlolsfirststage.fit(cov_type="HC0") ## model fitting
+    print(mdlolsfirststage.params)  ## model parameters
 
-        print(mdlolsfirststage.summary())
+    print(mdlolsfirststage.summary())
 
 Now that we've checked relevance, we can set our `demand_instruments0` column equal to `price_instrument`, re-create the problem, and re-solve it. You should get a new coefficient on price of around `-30.6`. Does the change in $\hat{\alpha}$ suggest that price was positively or negatively correlated with $\Delta\xi_{jt}$ in $\xi_{jt} = \xi_j + \xi_t + \Delta\xi_{jt}$?        
 
-        product_data_renamed["demand_instruments0"] = product_data_renamed["price_instrument"]
-        product_data_renamed.head()
+    product_data_renamed["demand_instruments0"] = product_data_renamed["price_instrument"]
+    product_data_renamed.head()
 
-        problem_costshiftinstr = pyblp.Problem(pyblp.Formulation('prices', absorb='C(market_ids) + C(product_ids)'), product_data_renamed)
-        problem_costshiftinstr = problem_costshiftinstr.solve(method='1s')
-        print(problem_costshiftinstr)
+    problem_costshiftinstr = pyblp.Problem(pyblp.Formulation('prices', absorb='C(market_ids) + C(product_ids)'), product_data_renamed)
+    problem_costshiftinstr = problem_costshiftinstr.solve(method='1s')
+    print(problem_costshiftinstr)
 
 ## Part 9 Counterfactual: Cut a price in half and see what happens
 Now that we have our pure logit model estimated, we can run our counterfactual of interest: what if we halved an important product's price? We'll select a single market, the most recent quarter in the first city: `C01Q2`. Create a new dataframe called `counterfactual_data` data for just that market and inspect the data. We'll pretend that we're firm one, and deciding whether we want to cut the price of our brand four's product `F1B04`. In particular, we might be worried about *cannibalization*, i.e. how much this price cut will result in consumers of our other 8 brands of cereal in this market just substituting from their old choice to the new, cheaper cereal. Alternatively, we could be a regulator or academic interested in how taxing that product would affect demand in the market.
 
 In your new dataframe with just data from `C01Q2`, create a `new_prices` column that is the same as `prices` but with the price of `F1B04` cut in half. To do this, you could use [`DataFrame.loc`]. Then, use [`.compute_shares`] on your results from the last question, passing `market_id='C01Q2'` to only compute new market shares for our market of interest, and passing `prices=counterfactual_data['new_prices']` to specify that prices should be set to the new prices. This function will re-compute market shares at the changed prices implied by the model's estimates. Store them in a `new_shares` column.
     
-        counterfactual_data = product_data_renamed[product_data_renamed["market_ids"] =="C01Q2"]
-        counterfactual_data.head()
+    counterfactual_data = product_data_renamed[product_data_renamed["market_ids"] =="C01Q2"]
+    counterfactual_data.head()
         
-        counterfactual_data["new_prices"] = counterfactual_data["prices"]
-        rule = counterfactual_data["prices"] * 0.5
-        mask = counterfactual_data['product_ids'] == "F1B04"
-        counterfactual_data.loc[mask, 'new_prices'] = rule
-        counterfactual_data.head(20)
+    counterfactual_data["new_prices"] = counterfactual_data["prices"]
+    rule = counterfactual_data["prices"] * 0.5
+    mask = counterfactual_data['product_ids'] == "F1B04"
+    counterfactual_data.loc[mask, 'new_prices'] = rule
+    counterfactual_data.head(20)
 
 
 Compute the percent change in shares for each product in the market. From firm one's perspective, do the estimates of cannibalization make sense. That is, do the signs on the percent changes for product `F1B04` and for other products make sense? Would you normally expect percent changes for other products to be different depending on how other products compare to the one whose price is being changed?
         
-        new_shares = problem_costshiftinstr.compute_shares(market_id='C01Q2', prices=counterfactual_data['new_prices'])
-        new_shares
+    new_shares = problem_costshiftinstr.compute_shares(market_id='C01Q2', prices=counterfactual_data['new_prices'])
+    new_shares
 
-        counterfactual_data["new_shares"] = new_shares
-        counterfactual_data.head()
+    counterfactual_data["new_shares"] = new_shares
+    counterfactual_data.head()
 
-        new_minus_old = counterfactual_data["new_shares"] - counterfactual_data["shares"]
-        counterfactual_data["percentage_change_in_shares"]= new_minus_old / counterfactual_data["shares"]
+    new_minus_old = counterfactual_data["new_shares"] - counterfactual_data["shares"]
+    counterfactual_data["percentage_change_in_shares"]= new_minus_old / counterfactual_data["shares"]
 
 
-        counterfactual_data.head()
+    counterfactual_data.head()
 
 
 ## Part 10 Compute Demand Elasticities
 
 To better understand what's going on, use [`.compute_elasticities`) again specifying `market_id='C01Q2'`, to compute price elasticities for our market of interest. These measure what the model predicts will happen to demand in percentage terms when there's a 1% change in price of a product. The diagonal elements are own-price elasticities and the off-diagonal elements are cross-price elasticities. Does demand seem very elastic? Do the cross-price elasticities seem particularly reasonable?
 
-        elasticities = problem_costshiftinstr.compute_elasticities(market_id='C01Q2')
-        elasticities
+    elasticities = problem_costshiftinstr.compute_elasticities(market_id='C01Q2')
+    elasticities
 
-        import matplotlib as plt
-        plt.colorbar(plt.matshow(elasticities))
+    import matplotlib as plt
+    plt.colorbar(plt.matshow(elasticities))
 
         
         
