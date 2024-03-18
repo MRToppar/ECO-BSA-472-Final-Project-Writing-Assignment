@@ -175,8 +175,12 @@ Before using it, we should first run a first-stage regression to make sure that 
 
 Now that we've checked relevance, we can set our `demand_instruments0` column equal to `price_instrument`, re-create the problem, and re-solve it. You should get a new coefficient on price of around `-30.6`. Does the change in $\hat{\alpha}$ suggest that price was positively or negatively correlated with $\Delta\xi_{jt}$ in $\xi_{jt} = \xi_j + \xi_t + \Delta\xi_{jt}$?        
 
+  Run these lines first:
+    
     product_data_renamed["demand_instruments0"] = product_data_renamed["price_instrument"]
     product_data_renamed.head()
+
+Run these lines next:
 
     problem_costshiftinstr = pyblp.Problem(pyblp.Formulation('prices', absorb='C(market_ids) + C(product_ids)'), product_data_renamed)
     problem_costshiftinstr = problem_costshiftinstr.solve(method='1s')
@@ -187,9 +191,13 @@ Now that we have our pure logit model estimated, we can run our counterfactual o
 
 In your new dataframe with just data from `C01Q2`, create a `new_prices` column that is the same as `prices` but with the price of `F1B04` cut in half. To do this, you could use [`DataFrame.loc`]. Then, use [`.compute_shares`] on your results from the last question, passing `market_id='C01Q2'` to only compute new market shares for our market of interest, and passing `prices=counterfactual_data['new_prices']` to specify that prices should be set to the new prices. This function will re-compute market shares at the changed prices implied by the model's estimates. Store them in a `new_shares` column.
     
+Run these lines first:
+    
     counterfactual_data = product_data_renamed[product_data_renamed["market_ids"] =="C01Q2"]
     counterfactual_data.head()
-        
+
+Run these lines next:   
+
     counterfactual_data["new_prices"] = counterfactual_data["prices"]
     rule = counterfactual_data["prices"] * 0.5
     mask = counterfactual_data['product_ids'] == "F1B04"
@@ -199,15 +207,22 @@ In your new dataframe with just data from `C01Q2`, create a `new_prices` column 
 
 Compute the percent change in shares for each product in the market. From firm one's perspective, do the estimates of cannibalization make sense. That is, do the signs on the percent changes for product `F1B04` and for other products make sense? Would you normally expect percent changes for other products to be different depending on how other products compare to the one whose price is being changed?
         
+   Run these lines first:
+    
     new_shares = problem_costshiftinstr.compute_shares(market_id='C01Q2', prices=counterfactual_data['new_prices'])
     new_shares
+
+Run these lines next: 
 
     counterfactual_data["new_shares"] = new_shares
     counterfactual_data.head()
 
+Run these lines third: 
+
     new_minus_old = counterfactual_data["new_shares"] - counterfactual_data["shares"]
     counterfactual_data["percentage_change_in_shares"]= new_minus_old / counterfactual_data["shares"]
 
+Run this line last: 
 
     counterfactual_data.head()
 
