@@ -93,7 +93,7 @@ First, create a new column `logit_delta` equal to the left-hand side of this exp
         product_data.head()
 
 
-Then, run an OLS regression of `logit_delta` on a constant, `mushy`, and `price_per_serving`. T To use robust standard errors, you can specify `cov_type='HC0'` in [`OLS.fit`](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.fit.html).
+Then, run an OLS regression of `logit_delta` on a constant, `mushy`, and `price_per_serving`. To use robust standard errors, you can specify `cov_type='HC0'` in [`OLS.fit`](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.fit.html).
 
         from statsmodels.formula.api import ols
 
