@@ -55,9 +55,6 @@ To define the data and view the first five observations run the following code::
 
     product_data = pd.read_csv('products.csv')
     product_data.head()
-
-    product_data.sample()
-    product_data.describe()
     
 To view a sample observation of the data and get a quick summary of the data, run the following code::
 
