@@ -32,14 +32,14 @@ You can install the current release of PyBLP with ::
   
     pip install pyblp
 
- Run this line next:
+ Run these lines next:
  
     import pyblp
     import numpy as np
     import pandas as pd
     import statsmodels.formula.api as smf
 
- Run this line last:
+ Run these lines last:
  
     pyblp.options.digits = 2
     pyblp.options.verbose = False
@@ -99,7 +99,7 @@ Then, run an OLS regression of `logit_delta` on a constant, `mushy`, and `price_
    
     from statsmodels.formula.api import ols
 
-  Run these one next
+  Run these ones next
  
     mdlols = ols("logit_delta ~ 1 + mushy + price_per_serving", data=product_data) ## model object
     mdlols = mdlols.fit(cov_type="HC0") ## model fitting
@@ -231,8 +231,12 @@ Run this line last:
 
 To better understand what's going on, use [`.compute_elasticities`) again specifying `market_id='C01Q2'`, to compute price elasticities for our market of interest. These measure what the model predicts will happen to demand in percentage terms when there's a 1% change in price of a product. The diagonal elements are own-price elasticities and the off-diagonal elements are cross-price elasticities. Does demand seem very elastic? Do the cross-price elasticities seem particularly reasonable?
 
+   Run these lines first: 
+   
     elasticities = problem_costshiftinstr.compute_elasticities(market_id='C01Q2')
     elasticities
+
+Run these lines last: 
 
     import matplotlib as plt
     plt.colorbar(plt.matshow(elasticities))
