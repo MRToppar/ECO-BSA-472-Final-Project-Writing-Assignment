@@ -238,7 +238,7 @@ To better understand what's going on, use [`.compute_elasticities`) again specif
 
 Run these lines last: 
 
-    import matplotlib as plt
+    import matplotlib.pyplot as plt
     plt.colorbar(plt.matshow(elasticities))
 
         
