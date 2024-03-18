@@ -89,17 +89,21 @@ Compute summary statistics for your inside and outside shares. If you computed m
 Recall the pure logit estimating equation: $\log(s_{jt} / s_{0t}) = \delta_{jt} = \alpha p_{jt} + x_{jt}' \beta + \xi_{jt}$. 
 First, create a new column `logit_delta` equal to the left-hand side of this expression. I used [`np.log`] to compute the log.
 
-        product_data["logit_delta"] = np.log(product_data["market_share"] /product_data["outside_share"])
-        product_data.head()
+    product_data["logit_delta"] = np.log(product_data["market_share"] /product_data["outside_share"])
+    product_data.head()
 
 
 Then, run an OLS regression of `logit_delta` on a constant, `mushy`, and `price_per_serving`. To use robust standard errors, you can specify `cov_type='HC0'` in [`OLS.fit`](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.fit.html).
 
-        from statsmodels.formula.api import ols
+   Run this one first:
+   
+    from statsmodels.formula.api import ols
 
-        mdlols = ols("logit_delta ~ 1 + mushy + price_per_serving", data=product_data) ## model object
-        mdlols = mdlols.fit(cov_type="HC0") ## model fitting
-        print(mdlols.params)  ## model parameters
+  Run these one next
+ 
+    mdlols = ols("logit_delta ~ 1 + mushy + price_per_serving", data=product_data) ## model object
+    mdlols = mdlols.fit(cov_type="HC0") ## model fitting
+    print(mdlols.params)  ## model parameters
         
         
 
